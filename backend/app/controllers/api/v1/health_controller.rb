@@ -1,6 +1,6 @@
-module API
+module Api
   module V1
-    class BaseController < ApplicationController
+    class HealthController < BaseController
       def index
         render json: { status: 'ok', time: Time.current }
       end
