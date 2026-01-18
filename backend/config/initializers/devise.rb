@@ -1,4 +1,6 @@
 require "devise/jwt"
+require "warden/jwt_auth"
+require "warden/jwt_auth"
 
 # frozen_string_literal: true
 
@@ -314,13 +316,22 @@ Devise.setup do |config|
   # config.sign_in_after_change_password = true
 
   config.jwt do |jwt|
-  jwt.secret = Rails.application.credentials.devise_jwt_secret_key
+  # Use the application's secret_key_base for JWT secret so tokens
+  # generated in `SessionsController#jwt_token` and Devise verification
+  # use the same secret. If you prefer to store a separate key, set
+  # `devise_jwt_secret_key` in `credentials` and change this line.
+  jwt.secret = Rails.application.secret_key_base
   jwt.dispatch_requests = [
-    [ "POST", %r{ ^/api/v1/login$ } ]
+    [ "POST", %r{^/api/v1/login$} ]
   ]
   jwt.revocation_requests = [
-    [ "DELETE", %r{ ^/api/v1/logout$ } ]
+    [ "DELETE", %r{^/api/v1/logout$} ]
   ]
   jwt.expiration_time = 1.day.to_i
+  end
+
+  # Configure Warden to use JWT strategy for user authentication on API requests
+  config.warden do |manager|
+    manager.default_strategies(:user).unshift :jwt
   end
 end

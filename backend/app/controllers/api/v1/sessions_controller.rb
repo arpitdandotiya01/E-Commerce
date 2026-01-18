@@ -19,10 +19,10 @@ module Api
       private
 
       def jwt_token(user)
-        JWT.encode(
-          { user_id: user.id, exp: 24.hours.from_now.to_i },
-          Rails.application.secret_key_base
-        )
+        # Generate JWT with payload compatible with Devise JWT verification.
+        # Devise expects { sub, scp, aud, iat, exp, jti } and verifies with secret_key_base.
+        payload = { sub: user.id, scp: 'user', aud: nil, iat: Time.current.to_i, exp: 24.hours.from_now.to_i, jti: SecureRandom.uuid }
+        JWT.encode(payload, Rails.application.secret_key_base)
       end
     end
   end

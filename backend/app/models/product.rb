@@ -1,5 +1,6 @@
 class Product < ApplicationRecord
-
+  has_many :order_items
+  has_many :orders, through: :order_items
   validates :name, presence: true
 
   validates :price, numericality: { greater_than_or_equal_to: 0 }
@@ -7,6 +8,4 @@ class Product < ApplicationRecord
   validates :stock_quantity, numericality: { greater_than_or_equal_to: 0 }
 
   scope :active, -> { where(active: true) }
-
 end
- 
