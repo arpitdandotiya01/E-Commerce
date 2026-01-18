@@ -42,9 +42,6 @@ group :development, :test do
   # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
   gem "bundler-audit", require: false
 
-  # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
-  gem "brakeman", require: false
-
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 end
@@ -60,10 +57,27 @@ gem "devise"
 gem "jwt"
 
 gem "devise-jwt"
-gem "spring"
 gem "pundit"
+gem "spring"
+
+group :test do
+  gem "pundit-matchers", "~> 3.1"
+end
 
 group :development, :test do
   gem "rspec-rails"
   gem "factory_bot_rails"
+end
+
+group :test do
+  gem "simplecov", require: false
+  gem "shoulda-matchers"
+end
+
+group :development do
+  gem "rubocop", require: false
+end
+
+group :development do
+  gem "brakeman", require: false
 end

@@ -17,7 +17,7 @@ RSpec.describe "Orders API", type: :request do
     let(:order) { create(:order, user: user) }
 
     it "adds an item to the order" do
-      post "/api/v1/orders/#{order.id}/add_item", 
+      post "/api/v1/orders/#{order.id}/add_item",
            params: { product_id: product.id, quantity: 2 }.to_json,
            headers: auth_headers(user)
 

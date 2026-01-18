@@ -10,7 +10,7 @@ module Api
         if order.save
           render json: order, status: :created
         else
-          render json: { errors: order.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: order.errors.full_messages }, status: :unprocessable_content
         end
       end
 
@@ -40,7 +40,7 @@ module Api
 
         product_id = params[:product_id]
         unless product_id.present?
-          return render(json: { error: 'product_id is required' }, status: :bad_request)
+          return render(json: { error: "product_id is required" }, status: :bad_request)
         end
 
         product = Product.find_by(id: product_id)
@@ -48,8 +48,19 @@ module Api
           return render(json: { error: "Product with id=#{product_id} not found" }, status: :not_found)
         end
 
+        # Check if product is active
+        unless product.active?
+          return render(json: { error: "Product is no longer available" }, status: :unprocessable_content)
+        end
+
         quantity = params[:quantity].to_i
         quantity = 1 if quantity <= 0
+
+        # Check if there's sufficient stock
+        current_quantity_in_cart = order.order_items.where(product: product).sum(:quantity)
+        if product.stock_quantity < (current_quantity_in_cart + quantity)
+          return render(json: { error: "Insufficient stock" }, status: :unprocessable_content)
+        end
 
         item = order.order_items.find_or_initialize_by(product: product)
         item.quantity = item.quantity.to_i + quantity
@@ -87,11 +98,25 @@ module Api
         order = current_user.orders.find(params[:id])
         authorize order, :checkout?
 
+        # Check if order is already paid
+        if order.paid?
+          raise "Order is already completed"
+        end
+
+        # Check if order has items
+        if order.order_items.empty?
+          raise "Your cart is empty"
+        end
+
         ActiveRecord::Base.transaction do
           order.order_items.each do |item|
             product = item.product
+            # Check if product is active
+            unless product.active?
+              raise "Product #{product.name} is no longer available"
+            end
             if product.stock_quantity < item.quantity
-              raise ActiveRecord::Rollback, "Insufficient stock for product #{product.name}"
+              raise "Insufficient stock for product #{product.name}"
             end
 
             product.update!(stock_quantity: product.stock_quantity - item.quantity)
@@ -105,9 +130,9 @@ module Api
             total_amount: order.total_amount,
             status: order.status
           }
-          rescue => e
-            render json: { error: e.message }, status: :unprocessable_entity
         end
+      rescue RuntimeError => e
+        render json: { error: e.message }, status: :unprocessable_content
       end
 
       private

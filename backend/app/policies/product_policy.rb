@@ -11,11 +11,11 @@ class ProductPolicy < ApplicationPolicy
     user.admin?
   end
 
-  def show
+  def show?
     true
   end
 
-  def index
+  def index?
     true
   end
 end

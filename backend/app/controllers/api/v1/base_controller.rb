@@ -4,7 +4,7 @@ module Api
       include Pundit::Authorization
 
       rescue_from Pundit::NotAuthorizedError do
-        render json: { error: 'You are not authorized to perform this action.' }, status: :forbidden
+        render json: { error: "You are not authorized to perform this action." }, status: :forbidden
       end
     end
   end

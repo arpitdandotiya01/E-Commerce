@@ -12,16 +12,15 @@ module Api
         render json: @product
       end
 
-      def create
-        authorize Product
-        @product = Product.new(product_params)
-
-        if @product.save
-          render json: @product, status: :created
-        else
-          render json: { errors: @product.errors.full_messages }, status: :unprocessable_entity
-        end
+    def create
+      authorize Product
+      @product = Product.new(product_params)
+      if @product.save
+        render json: @product, status: :created
+      else
+        render json: { errors: @product.errors.full_messages }, status: :unprocessable_content
       end
+    end
 
       def update
         authorize @product
@@ -29,7 +28,7 @@ module Api
         if @product.update(product_params)
           render json: @product
         else
-          render json: { errors: @product.errors.full_messages }, status: :unprocessable_entity
+          render json: { errors: @product.errors.full_messages }, status: :unprocessable_content
         end
       end
 

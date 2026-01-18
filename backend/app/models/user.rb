@@ -5,20 +5,16 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable,
          :jwt_authenticatable, jwt_revocation_strategy: JwtDenylist
 
-  after_initialize :set_default_role, if: :new_record?
-
   has_many :orders, dependent: :destroy
-
-  def set_default_role
-    self.role ||= "user"
-  end
-
-  def admin?
-    role == "admin"
-  end
 
   enum :role, {
     user: 0,
     admin: 1
   }
+
+  before_validation :set_default_role, on: :create
+
+  def set_default_role
+    self.role ||= :user
+  end
 end
