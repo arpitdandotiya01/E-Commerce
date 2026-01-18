@@ -1,19 +1,26 @@
-import apiClient from "./api/client";
-import { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./pages/Login";
+import Products from "./pages/Products";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-  useEffect(() => {
-    apiClient
-      .get("/products")
-      .then((response) => {
-        console.log("Products:", response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching products:", error);
-      });
-  }, []);
-
-  return <div className="App">E-Commerce App</div>;
+  return (
+    <Router>
+      <div className="App">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Products />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </div>
+    </Router>
+  );
 }
 
 export default App;
