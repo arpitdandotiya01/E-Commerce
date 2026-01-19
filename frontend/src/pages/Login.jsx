@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import apiClient from "../api/client";
 import { useAuth } from "../context/AuthContext";
 
@@ -17,14 +17,19 @@ function Login() {
 
  const handleSubmit = async (e) => {
    e.preventDefault();
-   try {
-     const res = await apiClient.post("/login", {
-       user: { email, password },
-     });
-     login(res.data.token);
+  try {
+    // Devise-style nested param
+    const res = await apiClient.post("/login", {
+      user: { email, password },
+    });
+    // backend returns token in response body as `token`
+    const tokenValue = res.data?.token;
+    if (!tokenValue) throw new Error('No token returned from server');
+    login(tokenValue);
      navigate("/");
-   } catch {
-     alert("Invalid credentials");
+   } catch (error) {
+     console.error("Login failed:", error);
+     alert(error.response?.data?.error || "Invalid credentials");
    }
  };
 
@@ -43,6 +48,9 @@ function Login() {
        onChange={(e) => setPassword(e.target.value)}
      />
      <button type="submit">Login</button>
+     <p>
+       Don't have an account? <Link to="/signup">Sign Up</Link>
+     </p>
    </form>
  );
 }

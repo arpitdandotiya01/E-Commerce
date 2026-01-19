@@ -17,6 +17,18 @@ class OrderPolicy < ApplicationPolicy
     user.admin?
   end
 
+  def add_item?
+    record.user_id == user.id && record.pending?
+  end
+
+  def update_item?
+    record.user_id == user.id && record.pending?
+  end
+
+  def remove_item?
+    record.user_id == user.id && record.pending?
+  end
+
   def checkout?
     record.user_id == user.id && record.pending?
   end

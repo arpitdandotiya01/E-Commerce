@@ -9,6 +9,7 @@ function LogoutButton() {
 
   const handleLogout = () => {
     logout();
+    // Clear cart on logout to prevent it from being seen by the next user.
     clearCart();
     navigate("/login");
   };

@@ -9,6 +9,9 @@ Rails.application.routes.draw do
         delete "logout", to: "sessions#destroy"
       end
 
+      # Allow frontend signup route
+      post "signup", to: "registrations#create"
+
       resources :products, only: [ :index, :show, :create, :update, :destroy ]
 
       resources :orders, only: [ :create, :index, :show ] do

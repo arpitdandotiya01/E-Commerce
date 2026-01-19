@@ -12,7 +12,7 @@ module Api
         render json: {
           message: "Logged in successfully.",
           token: token,
-          user: { id: resource.id, email: resource.email }
+          user: { id: resource.id, email: resource.email, admin: resource.admin? }
         }
       end
 

@@ -2,7 +2,7 @@ module Api
   module V1
     class OrdersController < BaseController
       before_action :authenticate_user!
-      before_action :set_order, only: [ :show, :update_status ]
+      before_action :set_order, only: [ :show, :update_status, :add_item, :update_item, :remove_item ]
 
       def create
         order = current_user.orders.new(status: "pending")
@@ -32,11 +32,11 @@ module Api
 
       def show
         authorize @order
-        render json: @order, status: :ok
+        render json: @order.as_json(include: { order_items: { include: :product } }), status: :ok
       end
 
       def add_item
-        order = current_user.orders.find_or_create_by!(status: "pending")
+        authorize @order
 
         product_id = params[:product_id]
         unless product_id.present?
@@ -57,41 +57,41 @@ module Api
         quantity = 1 if quantity <= 0
 
         # Check if there's sufficient stock
-        current_quantity_in_cart = order.order_items.where(product: product).sum(:quantity)
-        if product.stock_quantity < (current_quantity_in_cart + quantity)
+        total_quantity_in_pending_orders = Order.where(status: "pending").joins(:order_items).where(order_items: { product_id: product.id }).sum(:quantity)
+        if product.stock_quantity < (total_quantity_in_pending_orders + quantity)
           return render(json: { error: "Insufficient stock" }, status: :unprocessable_content)
         end
 
-        item = order.order_items.find_or_initialize_by(product: product)
+        item = @order.order_items.find_or_initialize_by(product: product)
         item.quantity = item.quantity.to_i + quantity
         item.price = product.price
 
         ActiveRecord::Base.transaction do
           item.save!
-          update_total(order)
+          update_total(@order)
         end
 
-        render json: order, include: :order_items, status: :ok
+        render json: @order.as_json(include: { order_items: { include: :product } }), status: :ok
       end
 
       def update_item
-        order = current_user.orders.find_by!(status: "pending")
-        item = order.order_items.find(params[:item_id])
+        authorize @order
+        item = @order.order_items.find(params[:item_id])
 
         item.update!(quantity: params[:quantity])
-        update_total(order)
+        update_total(@order)
 
-        render json: order, include: :order_items, status: :ok
+        render json: @order.as_json(include: { order_items: { include: :product } }), status: :ok
       end
 
       def remove_item
-        order = current_user.orders.find_by!(status: "pending")
-        item = order.order_items.find(params[:item_id])
+        authorize @order
+        item = @order.order_items.find(params[:item_id])
 
         item.destroy!
-        update_total(order)
+        update_total(@order)
 
-        render json: order, include: :order_items, status: :ok
+        render json: @order.as_json(include: { order_items: { include: :product } }), status: :ok
       end
 
       def checkout

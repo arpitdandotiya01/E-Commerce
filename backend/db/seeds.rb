@@ -1,37 +1,46 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+# This file should contain all the record creation needed to seed the database with its default values.
+# The data can then be loaded with the `bin/rails db:seed` command (or created alongside the database with `db:setup`).
 
-# Create admin user
-admin = User.find_or_create_by!(email: 'admin@example.com')
-admin.password = 'password'
-admin.role = :admin
-admin.save!
+# Clear existing data to prevent duplicates on re-seeding
+puts "Clearing old data..."
+OrderItem.destroy_all
+Order.destroy_all
+Product.destroy_all
+User.destroy_all
 
-# Create regular user
-user = User.find_or_create_by!(email: 'user@example.com')
-user.password = 'password'
-user.role = :user
-user.save!
+# Create Admin User
+puts "Creating Admin User..."
+User.create!(
+  email: 'admin@example.com',
+  password: 'password',
+  password_confirmation: 'password',
+  admin: true
+)
 
-# Create products
-Product.find_or_create_by!(name: 'Laptop') do |product|
-  product.price = 1000.00
-  product.stock_quantity = 10
-end
+# Create Regular User
+puts "Creating Regular User..."
+User.create!(
+  email: 'user@example.com',
+  password: 'password',
+  password_confirmation: 'password',
+  admin: false
+)
 
-Product.find_or_create_by!(name: 'Phone') do |product|
-  product.price = 500.00
-  product.stock_quantity = 20
-end
+puts "Users created."
 
-Product.find_or_create_by!(name: 'Tablet') do |product|
-  product.price = 300.00
-  product.stock_quantity = 15
-end
+# Create Products
+puts "Creating Products..."
+Product.create!([
+  { name: 'Laptop', price: 1200.00, stock_quantity: 50, active: true },
+  { name: 'Mouse', price: 25.00, stock_quantity: 200, active: true },
+  { name: 'Keyboard', price: 75.00, stock_quantity: 150, active: true },
+  { name: 'Monitor', price: 300.00, stock_quantity: 100, active: true },
+  { name: 'Webcam', price: 50.00, stock_quantity: 80, active: false } # Inactive product
+])
+
+puts "Products created."
+puts "✅ Seed data created successfully!"
+puts "---"
+puts "Credentials:"
+puts "  Admin: admin@example.com / password"
+puts "  User:  user@example.com / password"
